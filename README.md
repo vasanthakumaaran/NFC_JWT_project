@@ -1,12 +1,12 @@
 # REACT NFC Sample App
-
+# Enhanced using JSON WEB TOKEN
 ## About
 
 This is a simple sample app demostrating the usage of the [Web NFC API](https://w3c.github.io/web-nfc/).
 
 **To get the Web NFC API working you will need an Android Device with Google Chrome and your web app will need to be hosted using https.**
 
-This is the [sample app](https://react-nfc-90146.web.app/) in action.
+This is the [sample app](https://nfc-acet.pages.dev/) in action.
 
 ![alt nfc tag](scs.png)
 
