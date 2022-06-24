@@ -2,7 +2,10 @@
 # Enhanced using JSON WEB TOKEN
 ## About
 
+
 This is a simple sample app demostrating the usage of the [Web NFC API](https://w3c.github.io/web-nfc/).
+
+This webapp is enhanced with JWT . The normal text will be converted into CipherText with user password
 
 **To get the Web NFC API working you will need an Android Device with Google Chrome and your web app will need to be hosted using https.**
 
@@ -12,7 +15,7 @@ This is the [sample app](https://nfc-acet.pages.dev/) in action.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-If you want to see an Angular app using NFCs look at this video [example](https://twitter.com/manekinekko/status/1424697070015991808) and visit [this repo](https://github.com/manekinekko/puzzle-duo-nfc) by the awesome [Wassim](https://twitter.com/manekinekko). Thanks to him I was introduced to the Web NFC API.
+If you want to see an Angular app using NFCs look at this video [example](https://twitter.com/manekinekko/status/1424697070015991808) and visit [this repo](https://github.com/manekinekko/puzzle-duo-nfc) by the awesome [Wassim](https://twitter.com/manekinekko). Thanks to him I was introduced to the Web NFC API. And Thanks to (https://github.com/kryptocodes) 
 
 ### WTF is NFC?
 
@@ -56,66 +59,103 @@ This project uses 4 methods of the Web NFC API
 
 ## Using the Web NFC API methods
 
+## Install JWT - npm install jsonwebtoken
+
+## Using the JWT - import JWT from 'jsonwebtoken';
+
+
 ### Scan, Reading, Reading Error
 
 ```javascript
-const scan = async() =>
-    if ("NDEFReader" in window) {
-        try {
-            const ndef = new window.NDEFReader();
-            await ndef.scan();
+ const scan = useCallback(async() => {
 
-            console.log("Scan started successfully.");
-            ndef.onreadingerror = () => {
-                console.log("Cannot read data from the NFC tag. Try another one?");
-            };
+        if ('NDEFReader' in window) { 
+            try {
+                const ndef = new window.NDEFReader();
+                await ndef.scan();
+                
+                console.log("Scan started successfully.");
+                ndef.onreadingerror = () => {
+                    console.log("Cannot read data from the NFC tag. Try another one?");
+                };
+                
+                ndef.onreading = event => {
+                    console.log("NDEF message read.");
+                    onReading(event);
+                    setActions({
+                        scan: 'scanned',
+                        write: null
+                    });
+                };
 
-            ndef.onreading = (event) => {
-                console.log("NDEF message read.");
-                onReading(event); //Find function below
+            } catch(error){
+                console.log(`Error! Scan failed to start: ${error}.`);
             };
-        } catch (error) {
-            console.log(`Error! Scan failed to start: ${error}.`);
         }
-    }
-};
+    },[setActions]);
+
+    const onReading = ({message, serialNumber}) => {
+        setSerialNumber(serialNumber);
+        for (const record of message.records) {
+            switch (record.recordType) {
+                case "text":
+                    const textDecoder = new TextDecoder(record.encoding);
+                    setMessage(textDecoder.decode(record.data));
+                    localStorage.setItem("message",textDecoder.decode(record.data))
+                    break;
+                case "url":
+                    // TODO: Read URL record with record data.
+                    break;
+                default:
+                    // TODO: Handle other records with record data.
+                }
+        }
+    };
 ```
 
-The **onReading** method grabs the message and serial number inside of the NFC tag, the uses the array of reacord inside of the message and decodes the information so its readable to humans.
+The **on Decryption** method grabs the message and serial number inside of the NFC tag, the uses the array of reacord inside of the message and decodes the information so its readable to humans.
 
 ```javascript
-const onReading = ({message, serialNumber}) => {
-    console.log(serialNumber);
-    for (const record of message.records) {
-        switch (record.recordType) {
-            case "text":
-                const textDecoder = new TextDecoder(record.encoding);
-                console.log("Message": textDecoder.decode(record.data));
-                break;
-            case "url":
-                // TODO: Read URL record with record data.
-                break;
-            default:
-                // TODO: Handle other records with record data.
-        }
+ const Decrypt = async(message) => {
+    if(password.length <= 0){
+      alert('Please fill all the fields')
+         } else {
+    
+      try{
+        const Verify = await JWT.verify(message,password);
+        await console.log(Verify)
+        await setMessage(Verify)
+      } catch(err){
+        alert('Wrong Password')
+      }
+     }
     }
-};
 ```
 
 ### Write
 
 ```javascript
-const onWrite = () => {
-  try {
-    const ndef = new window.NDEFReader();
-    await ndef.write({
-      records: [{ recordType: "text", data: "Hellow World!" }],
-    });
-    console.log(`Value Saved!`);
-  } catch (error) {
-    console.log(error);
-  }
-};
+ const Write = () => {
+    const onWrite = async(message,password) => {
+    if(message.length <= 0 || password.length <= 0){
+        alert('please fill all the fields');
+    }
+    else {
+
+        try {
+            const hash = await JWT.sign(message,password);
+            localStorage.setItem('encrypted',hash);
+            const ndef = new window.NDEFReader();
+            // const ndef = new window.NDEFReader();
+            // // This line will avoid showing the native NFC UI reader
+            await ndef.scan();
+            await ndef.write({records: [{ recordType: "text", data: hash }]});
+            alert(`Value Saved!`);
+        } catch (error) {
+            console.log(error);
+        }
+    } 
+    }
 ```
 
 ## Learn More & Resources
@@ -131,7 +171,7 @@ const onWrite = () => {
 
 In the project directory, you can run:
 
-### `yarn start`
+### `npm start`
 
 Runs the app in the development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -139,7 +179,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
 
-### `yarn build`
+### `npm build`
 
 Builds the app for production to the `build` folder.\
 It correctly bundles React in production mode and optimizes the build for the best performance.
