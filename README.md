@@ -11,7 +11,7 @@ This webapp is enhanced with JWT . The normal text will be converted into Cipher
 
 This is the [sample app](https://nfc-acet.pages.dev/) in action.
 
-![alt nfc tag](scs.png,output2.png,output4.png)
+![alt nfc tag](scs.png)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
