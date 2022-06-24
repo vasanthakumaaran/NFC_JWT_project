@@ -13,7 +13,9 @@ This is the [sample app](https://nfc-acet.pages.dev/) in action.
 
 ![alt nfc tag](scs.png)
 
-![alt nfc Write](output.4)
+![alt nfc Write](output2.png)
+
+![alt nfc Write](output4.png)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
